@@ -27,4 +27,13 @@ The demo code is in the file `train_resnet_demo.py`. The command for running it 
 
 Each time the training script is run, a new output folder with a timestamp is created by default under `./logs` -- `logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yml`; metrics such as the training and validation losses are updated in `log.csv`. 
 
+**Plotting logs:** The log-file plotting utility function can be called from the command line as shown in the snippet below. The output figures are saved under the logs folder in the output location of that experiment.
+
+    LOG_FILE=umd-face/logs/MODEL-resnet_umdfaces_CFG-002_TIME-20180109-133051/log.csv
+
+    python -c "from utils import plot_log_csv; plot_log_csv('$LOG_FILE')"
+
+
+
+
 

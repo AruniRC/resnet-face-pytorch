@@ -86,6 +86,8 @@ def main():
     #       ......./....jpg.. 
     data_root = args.dataset_path
     kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
+    RGB_MEAN = [ 0.485, 0.456, 0.406 ]
+    RGB_STD = [ 0.229, 0.224, 0.225 ]
     
     # Data transforms
     # http://pytorch.org/docs/master/torchvision/transforms.html
@@ -94,15 +96,15 @@ def main():
         transforms.RandomCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
-                             std = [ 0.229, 0.224, 0.225 ]),
+        transforms.Normalize(mean = RGB_MEAN,
+                             std = RGB_STD),
     ])
     val_transform = transforms.Compose([
         transforms.Scale((224,224)), 
         # transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
-                             std = [ 0.229, 0.224, 0.225 ]),
+        transforms.Normalize(mean = RGB_MEAN,
+                             std = RGB_STD),
     ])
 
     # Data loaders
