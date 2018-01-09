@@ -1,0 +1,13 @@
+name: resnet-demo
+dependencies:
+ - python=2.7
+ - scipy
+ - Pillow
+ - tqdm
+ - scikit-learn
+ - scikit-image
+ - numpy
+ - matplotlib
+ - ipython
+ - pyyaml
+
