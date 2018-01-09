@@ -15,22 +15,26 @@ Demo to train a ResNet model on  [UMDFaces](http://www.umdfaces.io/) dataset.
 After downloading the UMDFaces dataset (3 batches of _still_ images), the images need to be cropped into 'train' and 'val' folders. The following shell command does this for each batch in parallel.
 `for i in {0..2}; python umd-face/run_crop_face -b $i &; done`
 
-TODO - parallellize this. Takes almost a day.
-
+TODO - better parallellize this. Takes very long. Maybe MATLAB parfor?
 
 
 ### Usage - TODO
 
-Experimental settings such as learning rates are defined in `config.py`, each setting being a numbered key in a Python dict.
+**Training:** 
+* Look under `config.py` to select a training configuration
+* Training script is `umd-face/train_resnet_umdface.py`.
+* Multiple GPUs: Under section 3 ("Model") of the training script, we specify which GPUs to use in parallel: `model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()`. Change these numbers are depending on the number of available GPUs.
+* At the terminal, specify where the cropped face images are saved: `DATASET_PATH=local/path/to/cropped/umd/faces`
+* Run `python umd-face/train_resnet_umdface.py -c 3 -d $DATASET_PATH`
 
-The demo code is in the file `train_resnet_demo.py`. The command for running it on GPU:0 and using configuration:1 is `python train_resnet_demo.py -g 0 -c 1`. The code has detailed comments and serves as a walkthrough for training deep networks on custom datasets in PyTorch.
+Each time the training script is run, a new output folder with a timestamp is created by default under `./umd-face/logs` , i.e.  `./umd-face/logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yml`; metrics such as the training and validation losses are updated in `log.csv`. 
 
-Each time the training script is run, a new output folder with a timestamp is created by default under `./logs` -- `logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yml`; metrics such as the training and validation losses are updated in `log.csv`. 
+Most of the usual settings (data augmentations, learning rates, number of epochs to train, etc.) can be customized by editing `config.py` and `umd-face/train_resnet_umdface.py`.
 
-**Plotting logs:** The log-file plotting utility function can be called from the command line as shown in the snippet below. The output figures are saved under the logs folder in the output location of that experiment.
+**Plotting CSV logs:** The log-file plotting utility function can be called from the command line as shown in the snippet below. The figure is saved under the log folder in the output location of that experiment.
 
     LOG_FILE=umd-face/logs/MODEL-resnet_umdfaces_CFG-002_TIME-20180109-133051/log.csv
-
+    
     python -c "from utils import plot_log_csv; plot_log_csv('$LOG_FILE')"
 
 

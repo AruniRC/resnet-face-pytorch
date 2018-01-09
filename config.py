@@ -26,7 +26,19 @@ configurations = {
 
     2: dict(
         max_iteration=8670,    # num_iter_per_epoch = ceil(num_images/batch_size)
-        lr=0.01, # changed learning rate
+        lr=0.01, # high learning rate
+        lr_decay_epoch=None, # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=10,
+        optim='Adam',
+        batch_size=250,
+    ),
+
+    3: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=8670,  # 10 epochs
+        lr=0.001,            # lowered learning rate
         lr_decay_epoch=None, # disable automatic lr decay
         momentum=0.9,  
         weight_decay=0.0005,

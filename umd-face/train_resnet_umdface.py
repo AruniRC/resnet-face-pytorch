@@ -138,6 +138,7 @@ def main():
         # If a PyTorch model is to be loaded from a file
         checkpoint = torch.load(args.model_path)        
         model.load_state_dict(checkpoint['model_state_dict'])
+        # TODO: check if final fc layer sizes match num_classes
 
     start_epoch = 0
     start_iteration = 0
