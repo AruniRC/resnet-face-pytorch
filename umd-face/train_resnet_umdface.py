@@ -20,6 +20,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+here = osp.dirname(osp.abspath(__file__)) # output folder is located here
+root_dir,_ = osp.split(here)
+import sys
+sys.path.append(root_dir)
 
 import train
 from config import configurations
@@ -45,17 +49,14 @@ def get_log_dir(model_name, config_id, cfg, verbose=True):
     return log_dir
 
 
-here = osp.dirname(osp.abspath(__file__)) # output folder is located here
-
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--exp_name', default='resnet_umdface')
-    # parser.add_argument('-g', '--gpu', type=int, required=False)
+    parser.add_argument('-e', '--exp_name', default='resnet_umdfaces')
     parser.add_argument('-c', '--config', type=int, default=1,
                         choices=configurations.keys())
     parser.add_argument('-d', '--dataset_path', 
-                        default='./samples/tiny_dataset')
+                        default='/srv/data1/arunirc/datasets/UMDFaces/face_crops')
     parser.add_argument('-m', '--model_path', default=None)
     parser.add_argument('--resume', help='Checkpoint path')
     args = parser.parse_args()
@@ -88,39 +89,43 @@ def main():
     
     # Data transforms
     # http://pytorch.org/docs/master/torchvision/transforms.html
-    transform = transforms.Compose([
-        transforms.Scale(256),  # smallest size resized to 256
-        transforms.CenterCrop(224),
+    train_transform = transforms.Compose([
+        transforms.Scale(256),  # smaller side resized
+        transforms.RandomCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
                              std = [ 0.229, 0.224, 0.225 ]),
     ])
+    val_transform = transforms.Compose([
+        transforms.Scale((224,224)), 
+        # transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean = [ 0.485, 0.456, 0.406 ],
+                             std = [ 0.229, 0.224, 0.225 ]),
+    ])
 
-    # Data loader
+    # Data loaders
     # http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
-    traindir = args.dataset_path
+    traindir = osp.join(data_root, 'train')
     train_loader = torch.utils.data.DataLoader(
-                    datasets.ImageFolder(traindir, transform), 
-                    batch_size=3, shuffle=True, **kwargs)
+                    datasets.ImageFolder(traindir, train_transform), 
+                    batch_size=cfg['batch_size'], shuffle=True, **kwargs)
 
-    # for demo purpose, set to be same as train
+    valdir = osp.join(data_root, 'val')
     val_loader = torch.utils.data.DataLoader(
-                    datasets.ImageFolder(traindir, transform), 
-                    batch_size=2, shuffle=False, **kwargs) 
+                    datasets.ImageFolder(valdir, val_transform), 
+                    batch_size=cfg['batch_size'], shuffle=False, **kwargs) 
 
-    print 'dataset classes:' + str(train_loader.dataset.classes)
+    # print 'dataset classes:' + str(train_loader.dataset.classes)
     num_class = len(train_loader.dataset.classes)
+    print 'Number of classes: %d' % num_class
 
 
     # -----------------------------------------------------------------------------
     # 2. Model
     # -----------------------------------------------------------------------------
-    # PyTorch ResNet model definition: 
-    #   https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
-    # ResNet docs:
-    #   http://pytorch.org/docs/master/torchvision/models.html#id3
-    model = torchvision.models.resnet50(pretrained=True) # Using pre-trained for demo purpose
+    model = torchvision.models.resnet50(pretrained=True) # pre-trained for quicker convergence
 
     # Replace last layer (by default, resnet has 1000 output categories)
     print model.fc  # Check: Linear (2048 -> 1000)
@@ -145,10 +150,10 @@ def main():
         pass
 
     # Loss - cross entropy between predicted scores (unnormalized) and class labels
-    # http://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#crossentropyloss
     criterion = nn.CrossEntropyLoss()
 
     if cuda:
+        # model.cuda()
         model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()
         criterion = criterion.cuda()
 
@@ -186,15 +191,20 @@ def main():
     # -----------------------------------------------------------------------------
     DEBUG = False
     if DEBUG:   
+        # model = model.cpu()
         dataiter = iter(val_loader)
         img, label = dataiter.next()
 
         print 'Labels: ' + str(label.size()) # batchSize x num_class
-        print 'Input: ' + str(img.size())    # batchSize x 3 x 224 x224
+        print 'Input: ' + str(img.size())    # batchSize x 3 x 224 x 224
 
         im = img.squeeze().numpy()
         im = im[0,:,:,:]    # get first image in the batch
         im = im.transpose((1,2,0)) # permute to 224x224x3
+        im = im * [ 0.229, 0.224, 0.225 ] # unnormalize
+        im = im + [ 0.485, 0.456, 0.406 ]
+        im[im<0] = 0
+
         f = plt.figure()
         plt.imshow(im)
         plt.savefig('sanity-check-im.jpg')  # save transformed image in current folder
@@ -205,12 +215,10 @@ def main():
 
         model.eval()
         outputs = model(inputs)
-        print 'Network output: ' + str(outputs.size())
-
+        print 'Network output: ' + str(outputs.size())        
         model.train()
     else:
         pass
-
 
     # -----------------------------------------------------------------------------
     # Training
@@ -220,6 +228,8 @@ def main():
         model=model,
         criterion=criterion,
         optimizer=optim,
+        init_lr=cfg['lr'],
+        lr_decay_epoch = cfg['lr_decay_epoch'],
         train_loader=train_loader,
         val_loader=val_loader,
         out=out,

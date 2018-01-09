@@ -10,10 +10,13 @@ Demo to train a ResNet model on  [UMDFaces](http://www.umdfaces.io/) dataset.
 * Install the dependencies using conda: `conda install scipy Pillow tqdm scikit-learn scikit-image numpy matplotlib ipython pyyaml`.
 
 
-### Dataset
+### Dataset preparation
 
-After downloading the UMDFaces dataset (3 batches of still images), the images need to be cropped into train and val folders. The following shell command does this for each batch in parallel.
+After downloading the UMDFaces dataset (3 batches of _still_ images), the images need to be cropped into 'train' and 'val' folders. The following shell command does this for each batch in parallel.
 `for i in {0..2}; python umd-face/run_crop_face -b $i &; done`
+
+TODO - parallellize this. Takes almost a day.
+
 
 
 ### Usage - TODO

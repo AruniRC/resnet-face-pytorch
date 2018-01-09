@@ -34,7 +34,7 @@ def lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
 class Trainer(object):
 
     # -----------------------------------------------------------------------------
-    def __init__(self, cuda, model, criterion, optimizer,
+    def __init__(self, cuda, model, criterion, optimizer, init_lr, lr_decay_epoch,
                  train_loader, val_loader, out, max_iter, interval_validate=None):
     # -----------------------------------------------------------------------------
         self.cuda = cuda
@@ -45,6 +45,12 @@ class Trainer(object):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.best_acc = 0
+        self.init_lr = init_lr
+        self.lr_decay_epoch = lr_decay_epoch
+        self.epoch = 0
+        self.iteration = 0
+        self.max_iter = max_iter
+        self.best_loss = 0
 
         self.timestamp_start = \
             datetime.datetime.now(pytz.timezone('US/Eastern'))
@@ -71,10 +77,7 @@ class Trainer(object):
             with open(osp.join(self.out, 'log.csv'), 'w') as f:
                 f.write(','.join(self.log_headers) + '\n')
 
-        self.epoch = 0
-        self.iteration = 0
-        self.max_iter = max_iter
-        self.best_loss = 0
+        
 
 
     # -----------------------------------------------------------------------------
@@ -236,9 +239,21 @@ class Trainer(object):
     def train(self):
     # -----------------------------------------------------------------------------
         max_epoch = int(math.ceil(1. * self.max_iter / len(self.train_loader)))
+        print 'Number of iters in an epoch: %d' % len(self.train_loader)
+        print 'Total epochs: %d' % max_epoch
+
         for epoch in tqdm.trange(self.epoch, max_epoch,
-                                 desc='Train', ncols=80):
+                                 desc='Train epochs', ncols=80, leave=True):
             self.epoch = epoch
+
+            if self.lr_decay_epoch is None:
+                pass
+            else:
+                assert self.lr_decay_epoch < max_epoch
+                lr_scheduler(self.optim, self.epoch, 
+                             init_lr=self.init_lr, 
+                             lr_decay_epoch=self.lr_decay_epoch)
+
             self.train_epoch()
             if self.iteration >= self.max_iter:
                 break
