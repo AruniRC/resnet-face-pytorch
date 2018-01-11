@@ -129,16 +129,19 @@ def main():
     # -----------------------------------------------------------------------------
     model = torchvision.models.resnet50(pretrained=True) # pre-trained for quicker convergence
 
-    # Replace last layer (by default, resnet has 1000 output categories)
-    print model.fc  # Check: Linear (2048 -> 1000)
-    model.fc = torch.nn.Linear(2048, num_class) # change to current dataset's classes
-    print model.fc
-    
     if args.model_path:
-        # If a PyTorch model is to be loaded from a file
+        # If existing model is to be loaded from a file
         checkpoint = torch.load(args.model_path)        
         model.load_state_dict(checkpoint['model_state_dict'])
-        # TODO: check if final fc layer sizes match num_classes
+
+    # Check if final fc layer sizes match num_class [TODO - test this]
+    if not model.fc.weight.size()[0] == num_class:
+        # Replace last layer
+        print model.fc
+        model.fc = torch.nn.Linear(2048, num_class)
+        print model.fc
+    else:
+        pass
 
     start_epoch = 0
     start_iteration = 0
@@ -165,8 +168,8 @@ def main():
     # 3. Optimizer
     # -----------------------------------------------------------------------------
     params = filter(lambda p: p.requires_grad, model.parameters()) 
-    # parameters with p.requires_grad=False are not updated during training
-    # this can be specified when defining the nn.Modules during model creation
+    # Parameters with p.requires_grad=False are not updated during training.
+    # This can be specified when defining the nn.Modules during model creation
 
     if 'optim' in cfg.keys():
     	if cfg['optim'].lower()=='sgd':
@@ -220,6 +223,8 @@ def main():
         outputs = model(inputs)
         print 'Network output: ' + str(outputs.size())        
         model.train()
+        import pdb; pdb.set_trace()  # breakpoint 35ffc369 //
+
     else:
         pass
 
@@ -239,6 +244,7 @@ def main():
         max_iter=cfg['max_iteration'],
         interval_validate=cfg.get('interval_validate', len(train_loader)),
     )
+
     trainer.epoch = start_epoch
     trainer.iteration = start_iteration
     trainer.train()

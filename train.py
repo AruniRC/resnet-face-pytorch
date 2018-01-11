@@ -34,8 +34,9 @@ def lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
 class Trainer(object):
 
     # -----------------------------------------------------------------------------
-    def __init__(self, cuda, model, criterion, optimizer, init_lr, lr_decay_epoch,
-                 train_loader, val_loader, out, max_iter, interval_validate=None):
+    def __init__(self, cuda, model, criterion, optimizer, init_lr,
+                 train_loader, val_loader, out, max_iter, 
+                 lr_decay_epoch=None, interval_validate=None):
     # -----------------------------------------------------------------------------
         self.cuda = cuda
 
