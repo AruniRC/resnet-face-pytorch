@@ -145,6 +145,14 @@ def main():
 
     start_epoch = 0
     start_iteration = 0
+    
+    # Loss - cross entropy between predicted scores (unnormalized) and class labels
+    criterion = nn.CrossEntropyLoss()
+
+    if cuda:
+        # model.cuda()
+        model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()
+        criterion = criterion.cuda()
 
     if resume:
         # Resume training from last saved checkpoint
@@ -154,14 +162,6 @@ def main():
         start_iteration = checkpoint['iteration']
     else:
         pass
-
-    # Loss - cross entropy between predicted scores (unnormalized) and class labels
-    criterion = nn.CrossEntropyLoss()
-
-    if cuda:
-        # model.cuda()
-        model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()
-        criterion = criterion.cuda()
 
 
     # -----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ configurations = {
         lr_decay_epoch=None, # disable automatic lr decay
         momentum=0.9,  
         weight_decay=0.0005,
-        interval_validate=10,
+        interval_validate=50,
         optim='Adam',
         batch_size=250,
     ),
