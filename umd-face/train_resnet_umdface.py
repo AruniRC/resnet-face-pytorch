@@ -129,11 +129,6 @@ def main():
     # -----------------------------------------------------------------------------
     model = torchvision.models.resnet50(pretrained=True) # pre-trained for quicker convergence
 
-    if args.model_path:
-        # If existing model is to be loaded from a file
-        checkpoint = torch.load(args.model_path)        
-        model.load_state_dict(checkpoint['model_state_dict'])
-
     # Check if final fc layer sizes match num_class [TODO - test this]
     if not model.fc.weight.size()[0] == num_class:
         # Replace last layer
@@ -143,15 +138,23 @@ def main():
     else:
         pass
 
-    start_epoch = 0
-    start_iteration = 0
-    
-    # Loss - cross entropy between predicted scores (unnormalized) and class labels
-    criterion = nn.CrossEntropyLoss()
-
     if cuda:
         # model.cuda()
         model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()
+
+    if args.model_path:
+        # If existing model is to be loaded from a file
+        checkpoint = torch.load(args.model_path)        
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+    
+
+    start_epoch = 0
+    start_iteration = 0
+
+    # Loss - cross entropy between predicted scores (unnormalized) and class labels
+    criterion = nn.CrossEntropyLoss()
+    if cuda:
         criterion = criterion.cuda()
 
     if resume:
