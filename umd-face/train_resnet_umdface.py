@@ -57,7 +57,8 @@ def main():
                         choices=configurations.keys())
     parser.add_argument('-d', '--dataset_path', 
                         default='/srv/data1/arunirc/datasets/UMDFaces/face_crops')
-    parser.add_argument('-m', '--model_path', default=None)
+    parser.add_argument('-m', '--model_path', default=None, 
+                        help='Initialize from pre-trained model')
     parser.add_argument('--resume', help='Checkpoint path')
     args = parser.parse_args()
 
@@ -107,8 +108,12 @@ def main():
                              std = RGB_STD),
     ])
 
-    # Data loaders
-    # http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
+    # Data loaders - using PyTorch built-in objects
+    #   loader = DataLoaderClass(DatasetClass)
+    #   * `DataLoaderClass` is PyTorch provided torch.utils.data.DataLoader
+    #   * `DatasetClass` loads samples from a dataset; can be a standard class 
+    #     provided by PyTorch (datasets.ImageFolder) or a customized class.
+    # More info: http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
     traindir = osp.join(data_root, 'train')
     train_loader = torch.utils.data.DataLoader(
                     datasets.ImageFolder(traindir, train_transform), 
@@ -226,7 +231,8 @@ def main():
         outputs = model(inputs)
         print 'Network output: ' + str(outputs.size())        
         model.train()
-        import pdb; pdb.set_trace()  # breakpoint 35ffc369 //
+        import pdb; pdb.set_trace()  # breakpoint c5e7c878 //
+
 
     else:
         pass

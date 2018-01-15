@@ -51,7 +51,7 @@ configurations = {
     # ResNet-50 on UMDFaces: stage 1
     4: dict(
         # num_iter_per_epoch = ceil(num_images/batch_size)
-        max_iteration=42180,  # 30 epochs on full dataset
+        max_iteration=42180,  # 30 epochs on full dataset (about 10 hours)
         lr=0.001,             # learning rate
         lr_decay_epoch=None,  # disable automatic lr decay
         momentum=0.9,  
@@ -67,6 +67,19 @@ configurations = {
         max_iteration=42180,  # 30 epochs on full dataset
         lr=0.0001,            # lowered learning rate
         lr_decay_epoch=None,  # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=50,
+        optim='Adam',
+        batch_size=250,
+    ),
+
+    # ResNet-50 on UMDFaces: stage 3
+    6: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=42180,   # 30 epochs on full dataset
+        lr=0.00001,            # lowered learning rate
+        lr_decay_epoch=None,   # disable automatic lr decay
         momentum=0.9,  
         weight_decay=0.0005,
         interval_validate=50,
