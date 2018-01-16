@@ -30,25 +30,6 @@ from config import configurations
 
 
 
-def get_log_dir(model_name, config_id, cfg, verbose=True):
-    # Creates an output directory for each experiment, timestamped
-    name = 'MODEL-%s_CFG-%03d' % (model_name, config_id)
-    if verbose:
-	    for k, v in cfg.items():
-	        v = str(v)
-	        if '/' in v:
-	            continue
-	        name += '_%s-%s' % (k.upper(), v)
-    now = datetime.datetime.now(pytz.timezone('US/Eastern'))
-    name += '_TIME-%s' % now.strftime('%Y%m%d-%H%M%S')
-    log_dir = osp.join(here, 'logs', name)
-    if not osp.exists(log_dir):
-        os.makedirs(log_dir)
-    with open(osp.join(log_dir, 'config.yaml'), 'w') as f:
-        yaml.safe_dump(cfg, f, default_flow_style=False)
-    return log_dir
-
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -258,6 +239,26 @@ def main():
     trainer.iteration = start_iteration
     trainer.train()
 
+
+
+def get_log_dir(model_name, config_id, cfg, verbose=True):
+    # Creates an output directory for each experiment, timestamped
+    name = 'MODEL-%s_CFG-%03d' % (model_name, config_id)
+    if verbose:
+        for k, v in cfg.items():
+            v = str(v)
+            if '/' in v:
+                continue
+            name += '_%s-%s' % (k.upper(), v)
+    now = datetime.datetime.now(pytz.timezone('US/Eastern'))
+    name += '_TIME-%s' % now.strftime('%Y%m%d-%H%M%S')
+    log_dir = osp.join(here, 'logs', name)
+    if not osp.exists(log_dir):
+        os.makedirs(log_dir)
+    with open(osp.join(log_dir, 'config.yaml'), 'w') as f:
+        yaml.safe_dump(cfg, f, default_flow_style=False)
+    return log_dir
+    
 
 if __name__ == '__main__':
     main()
