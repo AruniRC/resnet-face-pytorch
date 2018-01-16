@@ -1,6 +1,7 @@
 ## PyTorch ResNet on UMD-Face
 
-Demo to train a ResNet model on the [UMDFaces](http://www.umdfaces.io/) dataset. 
+Demo to train a ResNet model on the [UMDFaces](http://www.umdfaces.io/) dataset.
+
 
 ### Setup
 
@@ -45,8 +46,11 @@ stage 1 |   stage 2  | stage 3
 :construction:
 #### Evaluation - under construction...: 
 
-:arrows_counterclockwise:
-*Deployment demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example.
+*Deployment demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example. The visualized output of the demo is saved in the the root directory of the project.
+
+![](samples/demo_verif.png)
+
+
 
 :red_circle: TODO - eval on LFW
 

@@ -58,6 +58,7 @@ def main():
         torch.backends.cudnn.benchmark = True # enable if all images are same size    
 
 
+
     # -----------------------------------------------------------------------------
     # 1. Dataset
     # -----------------------------------------------------------------------------
@@ -93,7 +94,7 @@ def main():
     #   loader = DataLoaderClass(DatasetClass)
     #   * `DataLoaderClass` is PyTorch provided torch.utils.data.DataLoader
     #   * `DatasetClass` loads samples from a dataset; can be a standard class 
-    #     provided by PyTorch (datasets.ImageFolder) or a customized class.
+    #     provided by PyTorch (datasets.ImageFolder) or a custom-made class.
     # More info: http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
     traindir = osp.join(data_root, 'train')
     train_loader = torch.utils.data.DataLoader(
@@ -110,10 +111,11 @@ def main():
     print 'Number of classes: %d' % num_class
 
 
+
     # -----------------------------------------------------------------------------
     # 2. Model
     # -----------------------------------------------------------------------------
-    model = torchvision.models.resnet50(pretrained=True) # pre-trained for quicker convergence
+    model = torchvision.models.resnet50(pretrained=True) # ImageNet pre-trained for quicker convergence
 
     # Check if final fc layer sizes match num_class [TODO - test this]
     if not model.fc.weight.size()[0] == num_class:
@@ -138,7 +140,7 @@ def main():
     start_epoch = 0
     start_iteration = 0
 
-    # Loss - cross entropy between predicted scores (unnormalized) and class labels
+    # Loss - cross entropy between predicted scores (unnormalized) and class labels (integers)
     criterion = nn.CrossEntropyLoss()
     if cuda:
         criterion = criterion.cuda()
@@ -166,9 +168,11 @@ def main():
 				        lr=cfg['lr'],
 				        momentum=cfg['momentum'],
 				        weight_decay=cfg['weight_decay'])
+
     	elif cfg['optim'].lower()=='adam':
     		optim = torch.optim.Adam(params,
 				        lr=cfg['lr'], weight_decay=cfg['weight_decay'])
+
     	else:
     		raise NotImplementedError('Optimizers: SGD or Adam')
     else:
@@ -218,8 +222,9 @@ def main():
     else:
         pass
 
+
     # -----------------------------------------------------------------------------
-    # Training
+    # 4. Training
     # -----------------------------------------------------------------------------
     trainer = train.Trainer(
         cuda=cuda,
