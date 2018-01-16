@@ -29,11 +29,9 @@ After downloading the UMDFaces dataset (3 batches of _still_ images), the images
 * The training of ResNet-50 was done in 3 stages (*configs 4, 5 and 6*), each of *30 epochs*. After the first stage, we started from the saved model of the previous stage (using the `--model_path` or `-m` command-line argument) and divided the learning rate by a factor of 10.
 * Stage 1 (config-4): train on  the *full UMDFaces dataset for 30 epochs* (42180 iterations with batchsize 250) with a learning rate of 0.001, starting from an ImageNet pre-trained model. These settings are defined in *config-4* of `config.py`, which is selected using the `-c 4` flag in the command. Example to train a ResNet-50 on UMDFaces dataset using config-4: Run `python umd-face/train_resnet_umdface.py -c 4 -d $DATASET_PATH`.
 * Stage 2 (config-5): use the best model checkpointed from config-4 to initialize the network and train it using config-5 -- `python umd-face/train_resnet_umdface.py -c 5 -m ./umd-face/logs/MODEL-resnet_umdfaces_CFG-004_TIME-20180112-104913/model_best.pth.tar -d $DATASET_PATH` and so on for the subsequent stages.
-
-*Training logs:* Each time the training script is run, a new output folder with a timestamp is created by default under `./umd-face/logs` , i.e.  `./umd-face/logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yml`; metrics such as the training and validation losses are updated in `log.csv`. 
+* *Training logs:* Each time the training script is run, a new output folder with a timestamp is created by default under `./umd-face/logs` , i.e.  `./umd-face/logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yml`; metrics such as the training and validation losses are updated in `log.csv`. 
 Most of the usual settings (data augmentations, learning rates, number of epochs to train, etc.) can be customized by editing `config.py` and `umd-face/train_resnet_umdface.py`.
-
-*Plotting CSV logs:* The log-file plotting utility function can be called from the command line as shown in the snippet below. The figure is saved under the log folder in the output location of that experiment.
+* *Plotting CSV logs:* The log-file plotting utility function can be called from the command line as shown in the snippet below. The figure is saved under the log folder in the output location of that experiment.
 
     LOG_FILE=umd-face/logs/MODEL-resnet_umdfaces_CFG-004_TIME-20180109-133051/log.csv
     python -c "from utils import plot_log_csv; plot_log_csv('$LOG_FILE')"
@@ -43,16 +41,16 @@ stage 1 |   stage 2  | stage 3
 ![](samples/stage1_log_plots.png)|  ![](samples/stage2_log_plots.png) | ![](samples/stage3_log_plots.png) 
 
 
-:construction:
-#### Evaluation - under construction...: 
 
-*Deployment demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example. The visualized output of the demo is saved in the the root directory of the project.
+#### Evaluation: 
+
+*Verification demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example. The visualized output of the demo is saved in the the root directory of the project. The 3 sample images are taken from the [LFW](http://vis-www.cs.umass.edu/lfw/) dataset.
 
 ![](samples/demo_verif.png)
 
 
 
-:red_circle: TODO - eval on LFW
+:red_circle: TODO - eval on LFW :construction:
 
 
 
