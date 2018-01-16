@@ -15,15 +15,15 @@ Demo to train a ResNet model on the [UMDFaces](http://www.umdfaces.io/) dataset.
 After downloading the UMDFaces dataset (3 batches of _still_ images), the images need to be cropped into 'train' and 'val' folders. The following shell command does this for each batch in parallel.
 `for i in {0..2}; python umd-face/run_crop_face -b $i &; done`
 
-:red_circle: TODO - must parallellize this more: takes very long. Maybe MATLAB parfor?
+:small_red_triangle: TODO - must parallellize this more: takes very long. Maybe MATLAB parfor?
 
 
 ### Usage
 
-#### Training:
+#### Training:  
 * Look under `config.py` to select a training configuration
 * Training script is `umd-face/train_resnet_umdface.py`.
-* :red_circle: Multiple GPUs: Under section 3 ("Model") of the training script, we specify which GPUs to use in parallel: `model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()`. Change these numbers depending on the number of available GPUs. Use `watch -d nvidia-smi` to constantly monitor the multi-GPU usage from the terminal. TODO - make this into command args.
+* :small_red_triangle: Multiple GPUs: Under section 3 ("Model") of the training script, we specify which GPUs to use in parallel: `model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()`. Change these numbers depending on the number of available GPUs. Use `watch -d nvidia-smi` to constantly monitor the multi-GPU usage from the terminal. TODO - make this into command args.
 * At the terminal, specify where the cropped face images are saved using an environment variable: `DATASET_PATH=local/path/to/cropped/umd/faces`
 * The training of ResNet-50 was done in 3 stages (*configs 4, 5 and 6*), each of *30 epochs*. After the first stage, we started from the saved model of the previous stage (using the `--model_path` or `-m` command-line argument) and divided the learning rate by a factor of 10.
 * Stage 1 (config-4): train on  the *full UMDFaces dataset for 30 epochs* (42180 iterations with batchsize 250) with a learning rate of 0.001, starting from an ImageNet pre-trained model. These settings are defined in *config-4* of `config.py`, which is selected using the `-c 4` flag in the command. Example to train a ResNet-50 on UMDFaces dataset using config-4: Run `python umd-face/train_resnet_umdface.py -c 4 -d $DATASET_PATH`.
@@ -42,9 +42,11 @@ stage 1 |   stage 2  | stage 3
 ![](samples/stage1_log_plots.png)|  ![](samples/stage2_log_plots.png) | ![](samples/stage3_log_plots.png) 
 
 
-:yellow_circle: #### Evaluation - under construction...:
+:construction:
+#### Evaluation - under construction...: 
 
-:green_circle: *Deployment demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example.
+:arrows_counterclockwise:
+*Deployment demo:* First, we have a short script, `run_resnet_demo.py` to demonstrate the usage of the model on a toy face verification example.
 
 :red_circle: TODO - eval on LFW
 
