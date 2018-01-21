@@ -64,12 +64,12 @@ image = [PIL.Image.open(f).convert('RGB') for f in file_path]
 # Data transforms
 # http://pytorch.org/docs/master/torchvision/transforms.html
 # NOTE: these should be consistent with the training script val_loader
-# Since LFW images are 250x250 and not close-crops, we modify the cropping a bit.
+# Since LFW images (250x250) are not close-crops, we modify the cropping a bit.
 RGB_MEAN = [ 0.485, 0.456, 0.406 ]
 RGB_STD = [ 0.229, 0.224, 0.225 ]
 test_transform = transforms.Compose([
-    transforms.CenterCrop(150),
-    transforms.Scale((224,224)),
+    transforms.CenterCrop(150),   # 150x150 center crop
+    transforms.Scale((224,224)),  # resized to the network's required input size
     transforms.ToTensor(),
     transforms.Normalize(mean = RGB_MEAN,
                          std = RGB_STD),
@@ -77,10 +77,6 @@ test_transform = transforms.Compose([
 
 # apply the transform
 inputs = [test_transform(im) for im in image]
-
-# # Visualize
-# for im in image:
-#     im.show() # non-blocking display of PIL Images
 
 
 
@@ -133,7 +129,7 @@ for x in inputs:
     if cuda:
         x = x.cuda()
     x = x.view(1, x.size(0), x.size(1), x.size(2)) # add batch_dim=1 in the front
-    feat = extractor(x).view(-1) # extract features of input `x`, reshape to vector
+    feat = extractor(x).view(-1) # extract features of input `x`, reshape to 1-D vector
     features.append(feat)
 features = torch.stack(features) # N x 2048 for N inputs
 
@@ -146,7 +142,7 @@ else:
 
 
 # -----------------------------------------------------------------------------
-# 4. Face verification - TODO
+# 4. Face verification 
 # -----------------------------------------------------------------------------
 features = F.normalize(features, p=2, dim=1)  # L2-normalize
 
@@ -180,8 +176,6 @@ plt.imshow(image[2])
 plt.title('d = %.3f' % d2)
 plt.tight_layout()
 
-# plt.tight_layout()
-
 plt.savefig(osp.join(here, 'demo_verif.png'), bbox_inches='tight')
 
-print 'Visualization saved in: ' + osp.join(here, 'demo_verif.png')
+print 'Visualization saved in ' + osp.join(here, 'demo_verif.png')
