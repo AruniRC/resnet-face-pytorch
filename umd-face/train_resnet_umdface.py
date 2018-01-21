@@ -117,7 +117,7 @@ def main():
     # -----------------------------------------------------------------------------
     model = torchvision.models.resnet50(pretrained=True) # ImageNet pre-trained for quicker convergence
 
-    # Check if final fc layer sizes match num_class [TODO - test this]
+    # Check if final fc layer sizes match num_class
     if not model.fc.weight.size()[0] == num_class:
         # Replace last layer
         print model.fc
@@ -126,16 +126,16 @@ def main():
     else:
         pass
 
+    # TODO - config options for DataParallel and device_ids
+    model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4])
+
     if cuda:
-        # model.cuda()
-        model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4]).cuda()
+        model.cuda()
 
     if args.model_path:
         # If existing model is to be loaded from a file
         checkpoint = torch.load(args.model_path)        
         model.load_state_dict(checkpoint['model_state_dict'])
-
-    
 
     start_epoch = 0
     start_iteration = 0
