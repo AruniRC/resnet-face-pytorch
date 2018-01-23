@@ -33,11 +33,11 @@ from config import configurations
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--exp_name', default='resnet_umdfaces')
+    parser.add_argument('-e', '--exp_name', default='resnet_vggface')
     parser.add_argument('-c', '--config', type=int, default=1,
                         choices=configurations.keys())
     parser.add_argument('-d', '--dataset_path', 
-                        default='/srv/data1/arunirc/datasets/UMDFaces/face_crops')
+                        default='/srv/data1/arunirc/datasets/vggface2')
     parser.add_argument('-m', '--model_path', default=None, 
                         help='Initialize from pre-trained model')
     parser.add_argument('--resume', help='Checkpoint path')
@@ -96,12 +96,12 @@ def main():
     #   * `DatasetClass` loads samples from a dataset; can be a standard class 
     #     provided by PyTorch (datasets.ImageFolder) or a custom-made class.
     # More info: http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
-    traindir = osp.join(data_root, 'train')
+    traindir = osp.join(data_root, 'train-crop')
     train_loader = torch.utils.data.DataLoader(
                     datasets.ImageFolder(traindir, train_transform), 
                     batch_size=cfg['batch_size'], shuffle=True, **kwargs)
 
-    valdir = osp.join(data_root, 'val')
+    valdir = osp.join(data_root, 'val-crop')
     val_loader = torch.utils.data.DataLoader(
                     datasets.ImageFolder(valdir, val_transform), 
                     batch_size=cfg['batch_size'], shuffle=False, **kwargs) 
@@ -115,7 +115,7 @@ def main():
     # -----------------------------------------------------------------------------
     # 2. Model
     # -----------------------------------------------------------------------------
-    model = torchvision.models.resnet50(pretrained=True) # ImageNet pre-trained for quicker convergence
+    model = torchvision.models.resnet101(pretrained=True) # ImageNet pre-trained for quicker convergence
 
     # Check if final fc layer sizes match num_class
     if not model.fc.weight.size()[0] == num_class:
@@ -127,7 +127,7 @@ def main():
         pass
 
     # TODO - config options for DataParallel and device_ids
-    model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4])
+    model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6])
 
     if cuda:
         model.cuda()

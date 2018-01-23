@@ -241,7 +241,7 @@ class Trainer(object):
     # -----------------------------------------------------------------------------
         max_epoch = int(math.ceil(1. * self.max_iter / len(self.train_loader)))
         print 'Number of iters in an epoch: %d' % len(self.train_loader)
-        print 'Total epochs: %d' % max_epoch
+        print 'Total epochs: %d' % max_epoch        
 
         for epoch in tqdm.trange(self.epoch, max_epoch,
                                  desc='Train epochs', ncols=80, leave=True):

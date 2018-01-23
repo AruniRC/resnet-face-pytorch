@@ -86,6 +86,20 @@ configurations = {
         optim='Adam',
         batch_size=250,
     ),
+    # ---------------------------------------------------------------------------------
+
+    # ResNet-101 on VGGFace2: stage 1
+    7: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.001,              # learning rate
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=500,
+        optim='Adam',
+        batch_size=350,        # DataParallel over 7 gpus
+    ),
 
 }
 
