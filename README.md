@@ -1,7 +1,7 @@
 
 This repository shows how to train ResNet models in PyTorch on publicly available face recognition datasets.
 
-## Setup
+### Setup
 
 * Install [Anaconda](https://conda.io/docs/user-guide/install/linux.html) if not already installed in the system.
 * Create an Anaconda environment: `conda create -n resnet-face python=2.7` and activate it: `source activate resnet-face`.
@@ -12,6 +12,16 @@ This repository shows how to train ResNet models in PyTorch on publicly availabl
     * Tested on server running CentOS
     * Requires a basic knowledge of [PyTorch](http://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) 
     * Optional - an explanatory [blogpost](https://blog.waya.ai/deep-residual-learning-9610bb62c355) on Deep Residual Networks (ResNets).
+
+### Contents
+- [ResNet-50 on UMD-Faces](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-umd-face)
+    - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation)
+    - [Training](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation)
+    - [Evaluation demo](https://github.com/AruniRC/resnet-face-pytorch#evaluation)
+- [ResNet-101 on VGGFace2](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-vggface2)
+    - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
+    - [Training](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
+
 
 
 ## PyTorch ResNet on UMD-Face
