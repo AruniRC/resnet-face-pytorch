@@ -16,11 +16,11 @@ This repository shows how to train ResNet models in PyTorch on publicly availabl
 ### Contents
 - [ResNet-50 on UMD-Faces](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-umd-face)
     - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation)
-    - [Training](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation)
+    - [Training](https://github.com/AruniRC/resnet-face-pytorch#training)
     - [Evaluation demo](https://github.com/AruniRC/resnet-face-pytorch#evaluation)
 - [ResNet-101 on VGGFace2](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-vggface2)
     - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
-    - [Training](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
+    - [Training](https://github.com/AruniRC/resnet-face-pytorch#training-1)
 
 
 
