@@ -1,20 +1,22 @@
-## PyTorch ResNet on UMD-Face
 
-Demo to train a ResNet-50 model on the [UMDFaces](http://www.umdfaces.io/) dataset.
+This repository shows how to train ResNet models in PyTorch on publicly available face recognition datasets.
 
-
-### Setup
+## Setup
 
 * Install [Anaconda](https://conda.io/docs/user-guide/install/linux.html) if not already installed in the system.
 * Create an Anaconda environment: `conda create -n resnet-face python=2.7` and activate it: `source activate resnet-face`.
 * Install PyTorch and TorchVision inside the Anaconda environment. First add a channel to conda: `conda config --add channels soumith`. Then install: `conda install pytorch torchvision cuda80 -c soumith`.
 * Install the dependencies using conda: `conda install scipy Pillow tqdm scikit-learn scikit-image numpy matplotlib ipython pyyaml`.
 * *Notes*:
-    * Multiple GPUs (we used 5 1080Ti) recommended for the training to finish in reasonable time.
+    * Multiple GPUs (we used 5 GeForce GTX 1080Ti in parallel) recommended for the training to finish in reasonable time.
     * Tested on server running CentOS
     * Requires a basic knowledge of [PyTorch](http://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) 
     * Optional - an explanatory [blogpost](https://blog.waya.ai/deep-residual-learning-9610bb62c355) on Deep Residual Networks (ResNets).
 
+
+## PyTorch ResNet on UMD-Face
+
+Demo to train a ResNet-50 model on the [UMDFaces](http://www.umdfaces.io/) dataset.
 
 ### Dataset preparation
 
@@ -40,7 +42,7 @@ Demo to train a ResNet-50 model on the [UMDFaces](http://www.umdfaces.io/) datas
     * :small_red_triangle: **TODO** - make this into command-line args.
 * At the terminal, specify where the cropped face images are saved using an environment variable: `DATASET_PATH=local/path/to/cropped/umd/faces`
 * [config.py](./config.py) lists all the training configurations (i.e. model hyper-parameters) in a numbered Python dict.
-    * The training of ResNet-50 was done in 3 stages (*configs 4, 5 and 6*), each of *30 epochs*. After the first stage, we started from the saved model of the previous stage (using the `--model_path` or `-m` command-line argument) and divided the learning rate by a factor of 10.
+    * The training of ResNet-50 was done in 3 stages (*configs 4, 5 and 6*), each of *30 epochs*. For the first stage, we started with the ImageNet-pre-trained model from PyTorch. After the first stage, we started from the saved model of the previous stage (using the `--model_path` or `-m` command-line argument) and divided the learning rate by a factor of 10.
     * Stage 1 (config-4): train on  the *full UMDFaces dataset for 30 epochs* (42180 iterations with batchsize 250) with a learning rate of 0.001, starting from an ImageNet pre-trained model. These settings are defined in *config-4* of [config.py](./config.py), which is selected using the `-c 4` flag in the command. Example to train a ResNet-50 on UMDFaces dataset using config-4: run `python umd-face/train_resnet_umdface.py -c 4 -d $DATASET_PATH`.
     * Stage 2 (config-5): use the best model checkpointed from config-4 to initialize the network and train it using config-5 `python umd-face/train_resnet_umdface.py -c 5 -m ./umd-face/logs/MODEL-resnet_umdfaces_CFG-004_TIMESTAMP/model_best.pth.tar -d $DATASET_PATH` and so on for the subsequent stages.
 * *Training logs:* Each time the training script is run, a new output folder with a timestamp is created by default under `./umd-face/logs` , i.e.  `./umd-face/logs/MODEL-CFG-TIMESTAMP/`. Under an experiment's log folder the settings for each experiment can be viewed in `config.yaml`; metrics such as the training and validation losses are updated in `log.csv`. 
@@ -52,6 +54,11 @@ Most of the usual settings (data augmentations, learning rates, number of epochs
 stage 1 |   stage 2  | stage 3  
 :------:|:----------:|:--------:
 ![](samples/stage1_log_plots.png)|  ![](samples/stage2_log_plots.png) | ![](samples/stage3_log_plots.png) 
+
+
+#### Pre-trained model: 
+
+:red_circle: TODO - release pre-trained ResNet-50 on UMD-Faces :construction:
 
 
 #### Evaluation: 
@@ -68,17 +75,21 @@ stage 1 |   stage 2  | stage 3
 
 :construction: **Under construction** :construction:
 
-Training a ResNet model in PyTorch on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) dataset (not a demo).
-
-
+Training a *ResNet-101* model in PyTorch on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) dataset.
 
 
 ### Dataset preparation
 
 * Register on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) website and download their dataset
-* VGG provides loosely-cropped images. We use crops from a face detector, saved as a CSV in `[filename, subject_id, xmin, ymin, width, height]` format (not yet made available).  
-* The `vgg-face-2/crop_face.sh` script is used to crop the face images into a separate output folder. Please look at the settings section in the script to assign correct paths depending on where the VGGFace2 data was downloaded on your local machine.
+* VGGFace2 provides loosely-cropped images. We use crops from the [Faster R-CNN face detector](https://github.com/playerkk/face-py-faster-rcnn), saved as a CSV in `[filename, subject_id, xmin, ymin, width, height]` format (the CSV with pre-computed face crops is not yet made available).  
+* The `vgg-face-2/crop_face.sh` script is used to crop the face images into a separate output folder. Please look at the settings section in the script to assign correct paths depending on where the VGGFace2 data was downloaded on your local machine. This takes about a day. **TODO** - multi-process.
+    * Training images are under `OUTPUT_PATH/train-crop`
+    * Validation images (2 images per subject) under `OUTPUT_PATH/val-crop`
 
+### Training
+
+We used 7 GeForce GTX 1080Ti GPUs in parallel (PyTorch DataParallel) to train the network, using Batch Normalization, starting from the pre-trained ResNet-101 available in PyTorch model zoo, Adam optimizer, with an initial learning rate of 0.001.
+* Training settings for Stage-1 (30 epochs) are defined under *config-7* in [config.py](./config.py). This uses 7 GPUs and a batch size of 350 (50 samples per GPU).
 
 :red_circle: TODO - eval on LFW :construction:
 
