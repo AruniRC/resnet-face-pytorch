@@ -139,12 +139,12 @@ if cuda:
 else:
     features = features.data
 
+features = F.normalize(features, p=2, dim=1)  # L2-normalize
 
 
 # -----------------------------------------------------------------------------
 # 4. Face verification 
 # -----------------------------------------------------------------------------
-features = F.normalize(features, p=2, dim=1)  # L2-normalize
 
 # L2-distance between features (Tensors) of same and different pairs
 d1 = (features[0] - features[1]).norm(p=2) # same pair

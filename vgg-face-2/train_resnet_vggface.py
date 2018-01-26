@@ -26,6 +26,7 @@ import sys
 sys.path.append(root_dir)
 
 import train
+import models
 from config import configurations
 
 
@@ -41,6 +42,8 @@ def main():
     parser.add_argument('-m', '--model_path', default=None, 
                         help='Initialize from pre-trained model')
     parser.add_argument('--resume', help='Checkpoint path')
+    parser.add_argument('--bottleneck', action='store_true', default=False,
+                        help='Add a 512-dim bottleneck layer with L2 normalization')
     args = parser.parse_args()
 
     # gpu = args.gpu
@@ -117,25 +120,47 @@ def main():
     # -----------------------------------------------------------------------------
     model = torchvision.models.resnet101(pretrained=True) # ImageNet pre-trained for quicker convergence
 
-    # Check if final fc layer sizes match num_class
-    if not model.fc.weight.size()[0] == num_class:
-        # Replace last layer
-        print model.fc
-        model.fc = torch.nn.Linear(2048, num_class)
-        print model.fc
+    if type(model.fc) == torch.nn.modules.linear.Linear:
+        # Check if final fc layer sizes match num_class
+        if not model.fc.weight.size()[0] == num_class:
+            # Replace last layer
+            print model.fc
+            model.fc = torch.nn.Linear(2048, num_class)
+            print model.fc
+        else:
+            pass
     else:
         pass
+
+
+    if args.model_path:
+        # If existing model is to be loaded from a file
+        checkpoint = torch.load(args.model_path) 
+
+        if checkpoint['arch'] == 'DataParallel':
+            # if we trained and saved our model using DataParallel
+            model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6])
+            model.load_state_dict(checkpoint['model_state_dict'])
+            model = model.module # get network module from inside its DataParallel wrapper
+        else:
+            model.load_state_dict(checkpoint['model_state_dict'])
+
+    # TODO -- loading a bottleneck model might be a problem .... do some unit-tests
+    # optionally add a "bottleneck + L2-norm" layer after GAP-layer
+    if args.bottleneck:
+        layers = []
+        layers.append(torch.nn.Linear(2048, 512))
+        layers.append(nn.BatchNorm2d(512))
+        layers.append(torch.nn.ReLU(inplace=True))
+        layers.append(models.NormFeat()) # L2-normalization layer
+        layers.append(torch.nn.Linear(512, num_class))
+        model.fc = torch.nn.Sequential(*layers)
 
     # TODO - config options for DataParallel and device_ids
     model = torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6])
 
     if cuda:
-        model.cuda()
-
-    if args.model_path:
-        # If existing model is to be loaded from a file
-        checkpoint = torch.load(args.model_path)        
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model.cuda()  
 
     start_epoch = 0
     start_iteration = 0
@@ -163,23 +188,23 @@ def main():
     # This can be specified when defining the nn.Modules during model creation
 
     if 'optim' in cfg.keys():
-    	if cfg['optim'].lower()=='sgd':
-    		optim = torch.optim.SGD(params,
-				        lr=cfg['lr'],
-				        momentum=cfg['momentum'],
-				        weight_decay=cfg['weight_decay'])
+        if cfg['optim'].lower()=='sgd':
+            optim = torch.optim.SGD(params,
+                        lr=cfg['lr'],
+                        momentum=cfg['momentum'],
+                        weight_decay=cfg['weight_decay'])
 
-    	elif cfg['optim'].lower()=='adam':
-    		optim = torch.optim.Adam(params,
-				        lr=cfg['lr'], weight_decay=cfg['weight_decay'])
+        elif cfg['optim'].lower()=='adam':
+            optim = torch.optim.Adam(params,
+                        lr=cfg['lr'], weight_decay=cfg['weight_decay'])
 
-    	else:
-    		raise NotImplementedError('Optimizers: SGD or Adam')
+        else:
+            raise NotImplementedError('Optimizers: SGD or Adam')
     else:
-	    optim = torch.optim.SGD(params,
-			        lr=cfg['lr'],
-			        momentum=cfg['momentum'],
-			        weight_decay=cfg['weight_decay'])
+        optim = torch.optim.SGD(params,
+                    lr=cfg['lr'],
+                    momentum=cfg['momentum'],
+                    weight_decay=cfg['weight_decay'])
 
     if resume:
         optim.load_state_dict(checkpoint['optim_state_dict'])
@@ -207,6 +232,7 @@ def main():
         f = plt.figure()
         plt.imshow(im)
         plt.savefig('sanity-check-im.jpg')  # save transformed image in current folder
+        import pdb; pdb.set_trace()  # breakpoint b6f00c62 //
 
         inputs = Variable(img)
         if cuda:
@@ -263,7 +289,9 @@ def get_log_dir(model_name, config_id, cfg, verbose=True):
     with open(osp.join(log_dir, 'config.yaml'), 'w') as f:
         yaml.safe_dump(cfg, f, default_flow_style=False)
     return log_dir
-    
+
+
+
 
 if __name__ == '__main__':
     main()
