@@ -7,6 +7,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+
+class NormFeat(nn.Module):
+    ''' L2 normalization of features '''
+    def __init__(self):
+        super(NormFeat, self).__init__()
+
+    def forward(self, input):
+        return F.normalize(input, p=2, dim=1)
+
+
+
 # https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/surgery.py
 def get_upsampling_weight(in_channels, out_channels, kernel_size):
     """Make a 2D bilinear kernel suitable for upsampling"""
