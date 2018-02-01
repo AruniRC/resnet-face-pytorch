@@ -58,7 +58,7 @@ configurations = {
         weight_decay=0.0005,
         interval_validate=50,
         optim='Adam',
-        batch_size=250,
+        batch_size=250,       # DataParallel over 5 gpus
     ),
 
     # ResNet-50 on UMDFaces: stage 2
@@ -114,6 +114,33 @@ configurations = {
         batch_size=350,        # DataParallel over 7 gpus
     ),
 
+    #### 
+    # ResNet-101 on VGGFace2: stage 1
+    11: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.1,              # learning rate
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='Adam',
+        batch_size=350,        # DataParallel over 7 gpus
+    ),
+
+    # ResNet-101 on VGGFace2: stage 2
+    #   python vgg-face-2/train_resnet_vggface_scratch.py -c 12 -m ./vgg-face-2/logs/MODEL..-CFG-11...
+    12: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.01,               # reduced learning rate by factor 10
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='Adam',
+        batch_size=350,        # DataParallel over 7 gpus
+    ),
 
 }
 

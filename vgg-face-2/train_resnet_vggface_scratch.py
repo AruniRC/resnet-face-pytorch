@@ -35,7 +35,7 @@ from config import configurations
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--exp_name', default='resnet_vggface')
+    parser.add_argument('-e', '--exp_name', default='resnet_vggface_scratch')
     parser.add_argument('-c', '--config', type=int, default=1,
                         choices=configurations.keys())
     parser.add_argument('-d', '--dataset_path', 
@@ -126,7 +126,7 @@ def main():
     # -----------------------------------------------------------------------------
     # 2. Model
     # -----------------------------------------------------------------------------
-    model = torchvision.models.resnet101(pretrained=True) # ImageNet pre-trained for quicker convergence
+    model = torchvision.models.resnet101(pretrained=False)
 
     if type(model.fc) == torch.nn.modules.linear.Linear:
         # Check if final fc layer sizes match num_class
@@ -138,7 +138,7 @@ def main():
         else:
             pass
     else:
-        pass
+        pass    
 
 
     if args.model_path:
