@@ -100,14 +100,16 @@ def main():
     #   * `DatasetClass` loads samples from a dataset; can be a standard class 
     #     provided by PyTorch (datasets.ImageFolder) or a custom-made class.
     #      - More info: http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder
-    #   *  Balanced class sampling: https://discuss.pytorch.org/t/balanced-sampling-between-classes-with-torchvision-dataloader/2703/3
     traindir = osp.join(data_root, 'train')
     dataset_train = datasets.ImageFolder(traindir, train_transform)
-    # For unbalanced dataset we create a weighted sampler                       
+    
+    # For unbalanced dataset we create a weighted sampler
+    #   *  Balanced class sampling: https://discuss.pytorch.org/t/balanced-sampling-between-classes-with-torchvision-dataloader/2703/3                     
     weights = utils.make_weights_for_balanced_classes(
                 dataset_train.imgs, len(dataset_train.classes))                                                                
     weights = torch.DoubleTensor(weights)
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
+
     train_loader = torch.utils.data.DataLoader(
                     dataset_train, batch_size=cfg['batch_size'], 
                     sampler = sampler, **kwargs)

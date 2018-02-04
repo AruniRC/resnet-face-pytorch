@@ -142,6 +142,57 @@ configurations = {
         batch_size=350,        # DataParallel over 7 gpus
     ),
 
+    13: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.001,               # reduced learning rate by factor 10
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='Adam',
+        batch_size=350,        # DataParallel over 7 gpus
+    ),
+
+
+    # ResNet-50 with SGD
+    20: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.1,                
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='SGD',
+        batch_size=256,        # DataParallel over 7 gpus
+    ),
+
+    21: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.01,                
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='SGD',
+        batch_size=256,        # DataParallel over 7 gpus
+    ),
+
+    22: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 30 epochs on full dataset
+        lr=0.001,                
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='SGD',
+        batch_size=256,        # DataParallel over 7 gpus
+    ),
+
+
 }
 
 

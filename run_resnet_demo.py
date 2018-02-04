@@ -81,13 +81,13 @@ inputs = [test_transform(im) for im in image]
 
 
 # -----------------------------------------------------------------------------
-# 2. Model
+# 3. Model
 # -----------------------------------------------------------------------------
 # PyTorch ResNet model definition: 
 #   https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 # ResNet docs:
 #   http://pytorch.org/docs/master/torchvision/models.html#id3
-model = torchvision.models.resnet50(pretrained=True) # Using pre-trained for demo purpose
+model = torchvision.models.resnet50(pretrained=True)
 
 # Replace last layer (by default, resnet has 1000 output categories)
 model.fc = torch.nn.Linear(2048, num_class) # change to current dataset's classes
@@ -120,7 +120,7 @@ print extractor[-2][-1]  # second-last layer's last module - output is 2048-dim
 
 
 # -----------------------------------------------------------------------------
-# 3. Feature extraction
+# 4. Feature extraction
 # -----------------------------------------------------------------------------
 # - simple, one input sample at a time
 features = []
@@ -143,7 +143,7 @@ features = F.normalize(features, p=2, dim=1)  # L2-normalize
 
 
 # -----------------------------------------------------------------------------
-# 4. Face verification 
+# 5. Face verification 
 # -----------------------------------------------------------------------------
 
 # L2-distance between features (Tensors) of same and different pairs
