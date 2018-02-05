@@ -13,6 +13,11 @@ import torch
 from torch.utils import data
 
 
+
+DEBUG = False
+
+
+
 class DemoFaceDataset(data.Dataset):
     '''
         Dataset subclass for demonstrating how to load images in PyTorch.
@@ -89,5 +94,47 @@ class DemoFaceDataset(data.Dataset):
         im_out = im_out.permute(2,0,1) # C x H x W
 
         return im_out, label
+
+
+
+class LFWDataset(data.Dataset):
+    '''
+        Dataset subclass for loading LFW images in PyTorch.
+        This returns multiple images in a batch.
+    '''
+
+    # -----------------------------------------------------------------------------
+    def __init__(self, path_list, issame_list, transforms, split = 'test'):
+    # -----------------------------------------------------------------------------
+        '''
+            Parameters
+            ----------
+            path_list    -   List of full path-names to LFW images
+        ''' 
+        self.files = collections.defaultdict(list)
+        self.split = split
+        self.files[split] =  path_list
+        self.pair_label = issame_list
+        self.transforms = transforms
+
+
+    # -----------------------------------------------------------------------------
+    def __len__(self):
+    # -----------------------------------------------------------------------------
+        return len(self.files[self.split])
+
+
+    # -----------------------------------------------------------------------------
+    def __getitem__(self, index):
+    # -----------------------------------------------------------------------------
+        img_file = self.files[self.split][index]
+        img = PIL.Image.open(img_file)
+
+        if DEBUG:
+            print img_file
+
+        im_out = self.transforms(img)
+
+        return im_out
 
 
