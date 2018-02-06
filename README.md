@@ -106,7 +106,7 @@ Instructions on how to setup and run the LFW evaluation are at [lfw/README.md](.
 
 DevTest |  10 fold   
 :------:|:----------:
-![](samples/lfw_roc_devTest.png)|  ![](lfw_roc_10fold.png)
+![](samples/lfw_roc_devTest.png)|  ![](samples/lfw_roc_10fold.png)
 
 
 
