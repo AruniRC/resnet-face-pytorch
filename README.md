@@ -18,9 +18,10 @@ This repository shows how to train ResNet models in PyTorch on publicly availabl
     - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation)
     - [Training](https://github.com/AruniRC/resnet-face-pytorch#training)
     - [Evaluation demo](https://github.com/AruniRC/resnet-face-pytorch#evaluation)
-- [ResNet-101 on VGGFace2](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-vggface2)
+- [ResNet-50 on VGGFace2](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-vggface2)
     - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
     - [Training](https://github.com/AruniRC/resnet-face-pytorch#training-1)
+    - [Evaluation LFW]()
 
 
 
@@ -73,7 +74,7 @@ stage 1 |   stage 2  | stage 3
 
 #### Evaluation: 
 
-*Verification demo:* First, we have a short script, [run_resnet_demo.py](./run_resnet_demo.py) to demonstrate the usage of the model on a toy face verification example. The visualized output of the demo is saved in the the root directory of the project. The 3 sample images are taken from the [LFW](http://vis-www.cs.umass.edu/lfw/) dataset.
+*Verification demo:* We have a short script, [run_resnet_demo.py](./run_resnet_demo.py) to demonstrate the usage of the model on a toy face verification example. The visualized output of the demo is saved in the the root directory of the project. The 3 sample images are taken from the [LFW](http://vis-www.cs.umass.edu/lfw/) dataset.
 
 ![](samples/demo_verif.png)
 
@@ -83,9 +84,7 @@ stage 1 |   stage 2  | stage 3
 
 ## PyTorch ResNet on VGGFace2
 
-:construction: **Under construction** :construction:
-
-Training a *ResNet-101* model in PyTorch on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) dataset.
+Training a *ResNet-50* model in PyTorch on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) dataset.
 
 
 ### Dataset preparation
@@ -98,10 +97,17 @@ Training a *ResNet-101* model in PyTorch on the [VGGFace2](https://www.robots.ox
 
 ### Training
 
-We used 7 GeForce GTX 1080Ti GPUs in parallel (PyTorch DataParallel) to train the network, using Batch Normalization, starting from the pre-trained ResNet-101 available in PyTorch model zoo, Adam optimizer, with an initial learning rate of 0.001.
-* Training settings for Stage-1 (30 epochs) are defined under *config-7* in [config.py](./config.py). This uses 7 GPUs and a batch size of 350 (50 samples per GPU).
+* We used 7 GeForce GTX 1080Ti GPUs in parallel (PyTorch DataParallel) to train the network, using Batch Normalization, following the training procedure described in the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) paper.
+* Training settings are defined under *configs-20, 21, 22* in [config.py](./config.py).
 
-:red_circle: TODO - eval on LFW :construction:
+### Evaluation
+
+Instructions on how to setup and run the LFW evaluation are at [lfw/README.md](./lfw/README.md). 
+
+DevTest |  10 fold   
+:------:|:----------:
+![](samples/lfw_roc_devTest.png)|  ![](lfw_roc_10fold.png)
+
 
 
 

@@ -1,21 +1,18 @@
 import argparse
-import datetime
 import os
 import os.path as osp
-import pytz
 
 import torch
 import torchvision
 from torchvision import models
 import torch.nn as nn
-import torch.optim
 import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-import yaml
+import tqdm
 import numpy as np
 import sklearn.metrics
 import matplotlib
@@ -67,8 +64,8 @@ def main():
     file_ext = 'jpg' # observe, no '.' before jpg
     num_class = 8631
 
-    pairs = read_pairs(args.pairs_path)
-    path_list, issame_list = get_paths(args.dataset_path, pairs, file_ext)
+    pairs = utils.read_pairs(args.pairs_path)
+    path_list, issame_list = utils.get_paths(args.dataset_path, pairs, file_ext)
 
     # Define data transforms
     RGB_MEAN = [ 0.485, 0.456, 0.406 ]
@@ -117,11 +114,11 @@ def main():
     # -----------------------------------------------------------------------------
     # 3. Feature extraction
     # -----------------------------------------------------------------------------
-    num_batches = len(test_loader) // args.batch_size
     features = []
 
-    for batch_idx, images in enumerate(test_loader):
-        print batch_idx
+    for batch_idx, images in tqdm.tqdm(enumerate(test_loader), 
+                                        total=len(test_loader), 
+                                        desc='Extracting features'): 
         x = Variable(images, volatile=True)
         if cuda:
             x = x.cuda()
@@ -147,13 +144,58 @@ def main():
     feat_dist = (feat_pair1 - feat_pair2).norm(p=2, dim=1)
     feat_dist = feat_dist.numpy()
 
-    auc = sklearn.metrics.roc_auc_score(
-            np.asarray(issame_list), -feat_dist)
-    print 'AUC ROC: %.04f' % auc
+    # Eval metrics
+    scores = -feat_dist
+    gt = np.asarray(issame_list)
+    
+    # TODO - EER    
+    if args.fold == 0:
+        fig_path = osp.join(here, 'lfw_roc_devTest.png')
+        roc_auc = sklearn.metrics.roc_auc_score(gt, scores)
+        fpr, tpr, thresholds = sklearn.metrics.roc_curve(gt, scores)
+        print 'ROC-AUC: %.04f' % roc_auc
+        # Plot and save ROC curve
+        fig = plt.figure()
+        plt.title('ROC - lfw')
+        plt.plot(fpr, tpr, lw=2, label='ROC (auc = %0.4f)' % roc_auc)
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.grid()
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.legend(loc='lower right')
+        plt.tight_layout()
+    else:
+        # 10 fold auc and error bars
+        fold_size = 600 # 600 pairs in each fold
+        roc_auc = np.zeros(10)
 
-    # TODO - EER
+        fig = plt.figure()
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.grid()
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
 
-    # TODO - plot and save ROC curve
+        for i in tqdm.tqdm(range(10)):
+        	start = i * fold_size
+        	end = (i+1) * fold_size
+        	scores_fold = scores[start:end]
+        	gt_fold = gt[start:end]
+        	roc_auc[i] = sklearn.metrics.roc_auc_score(gt_fold, scores_fold)
+        	fpr, tpr, _ = sklearn.metrics.roc_curve(gt_fold, scores_fold)
+        	plt.plot(fpr, tpr, alpha=0.7, 
+        			lw=2, color='darkgreen',
+        			label='ROC (auc = %0.4f)' % roc_auc[i])
+
+        plt.title( 'ROC AUC: %0.4f +/- %0.4f' % 
+        			(np.mean(roc_auc), np.std(roc_auc)) )
+        fig_path = osp.join(here, 'lfw_roc_10fold.png')
+        
+
+    plt.savefig(fig_path, bbox_inches='tight')
+    print 'ROC curve saved at: ' + fig_path
+
 
 
 

@@ -179,3 +179,4 @@ plt.tight_layout()
 plt.savefig(osp.join(here, 'demo_verif.png'), bbox_inches='tight')
 
 print 'Visualization saved in ' + osp.join(here, 'demo_verif.png')
+
