@@ -242,8 +242,6 @@ def main():
         f = plt.figure()
         plt.imshow(im)
         plt.savefig('sanity-check-im.jpg')  # save transformed image in current folder
-        import pdb; pdb.set_trace()  # breakpoint b6f00c62 //
-
         inputs = Variable(img)
         if cuda:
             inputs = inputs.cuda()
@@ -252,8 +250,6 @@ def main():
         outputs = model(inputs)
         print 'Network output: ' + str(outputs.size())        
         model.train()
-        import pdb; pdb.set_trace()  # breakpoint c5e7c878 //
-
 
     else:
         pass

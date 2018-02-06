@@ -15,6 +15,9 @@ import torch.nn.functional as F
 import tqdm
 import numpy as np
 import sklearn.metrics
+from sklearn import metrics
+from scipy.optimize import brentq
+from scipy import interpolate
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -36,9 +39,7 @@ def main():
     parser.add_argument('-g', '--gpu', type=int, default=0)
     parser.add_argument('-d', '--dataset_path', 
                         default='/srv/data1/arunirc/datasets/lfw-deepfunneled')
-    parser.add_argument('-p', '--pairs_path', 
-                        default='./lfw/data/pairsDevTest.txt')
-    parser.add_argument('--fold', type=int, default=0)
+    parser.add_argument('--fold', type=int, default=0, choices=[0,10])
     parser.add_argument('--batch_size', type=int, default=100)
 
     parser.add_argument('-m', '--model_path', default=None, 
@@ -56,7 +57,10 @@ def main():
         torch.backends.cudnn.enabled = True
         torch.backends.cudnn.benchmark = True # enable if all images are same size    
 
-
+    if args.fold == 0:
+        pairs_path = './lfw/data/pairsDevTest.txt'
+    else:
+        pairs_path = './lfw/data/pairs.txt'
 
     # -----------------------------------------------------------------------------
     # 1. Dataset
@@ -64,7 +68,7 @@ def main():
     file_ext = 'jpg' # observe, no '.' before jpg
     num_class = 8631
 
-    pairs = utils.read_pairs(args.pairs_path)
+    pairs = utils.read_pairs(pairs_path)
     path_list, issame_list = utils.get_paths(args.dataset_path, pairs, file_ext)
 
     # Define data transforms
@@ -83,7 +87,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(
                         data_loader.LFWDataset(
                         path_list, issame_list, test_transform), 
-                    batch_size=args.batch_size, shuffle=False )
+                        batch_size=args.batch_size, shuffle=False )
 
 
     # -----------------------------------------------------------------------------
@@ -169,6 +173,7 @@ def main():
         # 10 fold auc and error bars
         fold_size = 600 # 600 pairs in each fold
         roc_auc = np.zeros(10)
+        roc_eer = np.zeros(10)
 
         fig = plt.figure()
         plt.xlim([0.0, 1.0])
@@ -178,23 +183,29 @@ def main():
         plt.ylabel('True Positive Rate')
 
         for i in tqdm.tqdm(range(10)):
-        	start = i * fold_size
-        	end = (i+1) * fold_size
-        	scores_fold = scores[start:end]
-        	gt_fold = gt[start:end]
-        	roc_auc[i] = sklearn.metrics.roc_auc_score(gt_fold, scores_fold)
-        	fpr, tpr, _ = sklearn.metrics.roc_curve(gt_fold, scores_fold)
-        	plt.plot(fpr, tpr, alpha=0.7, 
-        			lw=2, color='darkgreen',
-        			label='ROC (auc = %0.4f)' % roc_auc[i])
+            start = i * fold_size
+            end = (i+1) * fold_size
+            scores_fold = scores[start:end]
+            gt_fold = gt[start:end]
+            roc_auc[i] = sklearn.metrics.roc_auc_score(gt_fold, scores_fold)
+            fpr, tpr, _ = sklearn.metrics.roc_curve(gt_fold, scores_fold)
+            roc_eer[i] = brentq(
+                            lambda x: 1. - x - interpolate.interp1d(fpr, tpr)(x), 0., 1.)
+            plt.plot(fpr, tpr, alpha=0.4, 
+                    lw=2, color='darkgreen',
+                    label='ROC(auc=%0.4f, eer=%0.4f)' % (roc_auc[i], roc_eer[i]) )
 
-        plt.title( 'ROC AUC: %0.4f +/- %0.4f' % 
-        			(np.mean(roc_auc), np.std(roc_auc)) )
+        plt.title( 'AUC: %0.4f +/- %0.4f, EER: %0.4f +/- %0.4f' % 
+                    (np.mean(roc_auc), np.std(roc_auc),
+                     np.mean(roc_eer), np.std(roc_eer)) )
+
         fig_path = osp.join(here, 'lfw_roc_10fold.png')
         
 
     plt.savefig(fig_path, bbox_inches='tight')
     print 'ROC curve saved at: ' + fig_path
+
+
 
 
 
