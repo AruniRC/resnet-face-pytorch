@@ -21,7 +21,7 @@ This repository shows how to train ResNet models in PyTorch on publicly availabl
 - [ResNet-50 on VGGFace2](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-vggface2)
     - [Dataset preparation](https://github.com/AruniRC/resnet-face-pytorch#dataset-preparation-1)
     - [Training](https://github.com/AruniRC/resnet-face-pytorch#training-1)
-    - [Evaluation LFW]()
+    - [Evaluation LFW](https://github.com/AruniRC/resnet-face-pytorch#evaluation-1)
 
 
 
@@ -99,6 +99,11 @@ Training a *ResNet-50* model in PyTorch on the [VGGFace2](https://www.robots.ox.
 
 * We used 7 GeForce GTX 1080Ti GPUs in parallel (PyTorch DataParallel) to train the network, using Batch Normalization, following the training procedure described in the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) paper.
 * Training settings are defined under *configs-20, 21, 22* in [config.py](./config.py).
+* Briefly, training is done using SGD optimizer, starting with a learning rate of 0.1, which gets divided by 10 in subsequent stages. A new stage is begun whenever the validation curve flattens.
+* First stage training command, starting with a ResNet-50 from scratch: `python vgg-face-2/train_resnet50_vggface_scratch.py -c 20`
+* Subsequent training stages (with lowered learning rates) would be: 
+    - `python vgg-face-2/train_resnet50_vggface_scratch.py -c 21 -m PATH_TO_BEST_MODEL_CFG-20`
+    - `python vgg-face-2/train_resnet50_vggface_scratch.py -c 22 -m PATH_TO_BEST_MODEL_CFG-21`
 
 ### Evaluation
 
