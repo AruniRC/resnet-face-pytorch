@@ -35,14 +35,13 @@ import data_loader
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--exp_name', default='lfw_eval_dev')
+    parser.add_argument('-e', '--exp_name', default='lfw_eval')
     parser.add_argument('-g', '--gpu', type=int, default=0)
     parser.add_argument('-d', '--dataset_path', 
                         default='/srv/data1/arunirc/datasets/lfw-deepfunneled')
     parser.add_argument('--fold', type=int, default=0, choices=[0,10])
     parser.add_argument('--batch_size', type=int, default=100)
-
-    parser.add_argument('-m', '--model_path', default=None, 
+    parser.add_argument('-m', '--model_path', default=None, required=True,
                         help='Path to pre-trained model')
     
     args = parser.parse_args()
@@ -112,6 +111,7 @@ def main():
     feature_map = list(model.children())
     feature_map.pop()  # remove the final "class prediction" layer
     extractor = nn.Sequential(*feature_map) # create feature extractor
+    extractor.eval() # set to evaluation mode (fixes BatchNorm, dropout, etc.)
 
 
 
@@ -123,7 +123,7 @@ def main():
     for batch_idx, images in tqdm.tqdm(enumerate(test_loader), 
                                         total=len(test_loader), 
                                         desc='Extracting features'): 
-        x = Variable(images, volatile=True)
+        x = Variable(images, volatile=True) # test-time memory conservation
         if cuda:
             x = x.cuda()
         feat = extractor(x)
@@ -137,6 +137,7 @@ def main():
     sz = features.size()
     features = features.view(sz[0]*sz[1], sz[2])
     features = F.normalize(features, p=2, dim=1) # L2-normalize
+    # TODO - cache features
 
 
     # -----------------------------------------------------------------------------
@@ -151,8 +152,7 @@ def main():
     # Eval metrics
     scores = -feat_dist
     gt = np.asarray(issame_list)
-    
-    # TODO - EER    
+       
     if args.fold == 0:
         fig_path = osp.join(here, 'lfw_roc_devTest.png')
         roc_auc = sklearn.metrics.roc_auc_score(gt, scores)
@@ -160,7 +160,7 @@ def main():
         print 'ROC-AUC: %.04f' % roc_auc
         # Plot and save ROC curve
         fig = plt.figure()
-        plt.title('ROC - lfw')
+        plt.title('ROC - lfw dev-test')
         plt.plot(fpr, tpr, lw=2, label='ROC (auc = %0.4f)' % roc_auc)
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
@@ -170,7 +170,7 @@ def main():
         plt.legend(loc='lower right')
         plt.tight_layout()
     else:
-        # 10 fold auc and error bars
+        # 10 fold
         fold_size = 600 # 600 pairs in each fold
         roc_auc = np.zeros(10)
         roc_eer = np.zeros(10)
@@ -189,6 +189,7 @@ def main():
             gt_fold = gt[start:end]
             roc_auc[i] = sklearn.metrics.roc_auc_score(gt_fold, scores_fold)
             fpr, tpr, _ = sklearn.metrics.roc_curve(gt_fold, scores_fold)
+            # EER calc: https://yangcha.github.io/EER-ROC/
             roc_eer[i] = brentq(
                             lambda x: 1. - x - interpolate.interp1d(fpr, tpr)(x), 0., 1.)
             plt.plot(fpr, tpr, alpha=0.4, 
@@ -198,6 +199,7 @@ def main():
         plt.title( 'AUC: %0.4f +/- %0.4f, EER: %0.4f +/- %0.4f' % 
                     (np.mean(roc_auc), np.std(roc_auc),
                      np.mean(roc_eer), np.std(roc_eer)) )
+        plt.tight_layout()
 
         fig_path = osp.join(here, 'lfw_roc_10fold.png')
         
