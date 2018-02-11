@@ -35,7 +35,7 @@ from config import configurations
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-e', '--exp_name', default='resnet_vggface_scratch')
+    parser.add_argument('-e', '--exp_name', default='resnet50_vggface')
     parser.add_argument('-c', '--config', type=int, default=1,
                         choices=configurations.keys())
     parser.add_argument('-d', '--dataset_path', 
