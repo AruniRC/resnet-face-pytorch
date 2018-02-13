@@ -32,6 +32,16 @@ import utils
 import data_loader
 
 
+'''
+Evaluate a network on the LFW verification task
+===============================================
+Example usage:
+# Resnet 101 on 10 folds of LFW
+    python lfw/eval_lfw.py -e lfw_eval_resnet101 --model_type resnet101 --fold 10 -m BEST_MODEL_PATH
+
+'''
+
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -43,6 +53,8 @@ def main():
     parser.add_argument('--batch_size', type=int, default=100)
     parser.add_argument('-m', '--model_path', default=None, required=True,
                         help='Path to pre-trained model')
+    parser.add_argument('--model_type', default='resnet50',
+                        choices=['resnet50', 'resnet101', 'resnet101-512d'])
     
     args = parser.parse_args()
 
@@ -92,9 +104,22 @@ def main():
     # -----------------------------------------------------------------------------
     # 2. Model
     # -----------------------------------------------------------------------------
-    model = torchvision.models.resnet50(pretrained=True)
-    model.fc = torch.nn.Linear(2048, num_class)
-    checkpoint = torch.load(args.model_path)        
+    if args.model_type == 'resnet50':
+        model = torchvision.models.resnet50(pretrained=False)
+        model.fc = torch.nn.Linear(2048, num_class)
+    elif args.model_type == 'resnet101':
+        model = torchvision.models.resnet101(pretrained=False)
+        model.fc = torch.nn.Linear(2048, num_class)
+    elif args.model_type == 'resnet101-512d':
+        model = torchvision.models.resnet101(pretrained=False)
+        layers = []
+        layers.append(torch.nn.Linear(2048, 512))
+        layers.append(torch.nn.Linear(512, num_class))
+        model.fc = torch.nn.Sequential(*layers)
+    else:
+        raise NotImplementedError
+    
+    checkpoint = torch.load(args.model_path)       
 
     if checkpoint['arch'] == 'DataParallel':
         # if we trained and saved our model using DataParallel
@@ -109,10 +134,15 @@ def main():
 
     # Convert the trained network into a "feature extractor"
     feature_map = list(model.children())
-    feature_map.pop()  # remove the final "class prediction" layer
-    extractor = nn.Sequential(*feature_map) # create feature extractor
+    if args.model_type == 'resnet101-512d':
+        model.eval()
+        extractor = model
+        extractor.fc = nn.Sequential(extractor.fc[0])
+    else: 
+        feature_map.pop()
+        extractor = nn.Sequential(*feature_map)
+    
     extractor.eval() # set to evaluation mode (fixes BatchNorm, dropout, etc.)
-
 
 
     # -----------------------------------------------------------------------------
@@ -154,7 +184,8 @@ def main():
     gt = np.asarray(issame_list)
        
     if args.fold == 0:
-        fig_path = osp.join(here, 'lfw_roc_devTest.png')
+        fig_path = osp.join(here, 
+                args.exp_name + '_' + args.model_type + '_lfw_roc_devTest.png')
         roc_auc = sklearn.metrics.roc_auc_score(gt, scores)
         fpr, tpr, thresholds = sklearn.metrics.roc_curve(gt, scores)
         print 'ROC-AUC: %.04f' % roc_auc
@@ -201,7 +232,8 @@ def main():
                      np.mean(roc_eer), np.std(roc_eer)) )
         plt.tight_layout()
 
-        fig_path = osp.join(here, 'lfw_roc_10fold.png')
+        fig_path = osp.join(here, 
+                args.exp_name + '_' + args.model_type + '_lfw_roc_10fold.png')
         
 
     plt.savefig(fig_path, bbox_inches='tight')

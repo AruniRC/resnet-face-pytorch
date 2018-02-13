@@ -155,10 +155,10 @@ configurations = {
     ),
 
 
-    # ResNet-50 with SGD
+    # ResNet from scratch with SGD
     20: dict(
         # num_iter_per_epoch = ceil(num_images/batch_size)
-        max_iteration=267630,  # 30 epochs on full dataset
+        max_iteration=267630,  # 22 epochs on full dataset
         lr=0.1,                
         lr_decay_epoch=None,   # disable automatic lr decay
         momentum=0.9,  
@@ -170,7 +170,7 @@ configurations = {
 
     21: dict(
         # num_iter_per_epoch = ceil(num_images/batch_size)
-        max_iteration=267630,  # 30 epochs on full dataset
+        max_iteration=267630,  # 22 epochs on full dataset
         lr=0.01,                
         lr_decay_epoch=None,   # disable automatic lr decay
         momentum=0.9,  
@@ -182,8 +182,35 @@ configurations = {
 
     22: dict(
         # num_iter_per_epoch = ceil(num_images/batch_size)
-        max_iteration=267630,  # 30 epochs on full dataset
+        max_iteration=267630,  # 22 epochs on full dataset
         lr=0.001,                
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='SGD',
+        batch_size=256,        # DataParallel over 7 gpus
+    ),
+
+    # Used to fine-tune Resnet101-512d in the second stage
+    # (after the new layers are converged, entire net is fine-tuned)
+    23: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 22 epochs on full dataset
+        lr=0.0001,                
+        lr_decay_epoch=None,   # disable automatic lr decay
+        momentum=0.9,  
+        weight_decay=0.0005,
+        interval_validate=200,
+        optim='SGD',
+        batch_size=256,        # DataParallel over 7 gpus
+    ),
+
+    # lower learning rates on fine-tuning bottleneck (Resnet101-512d)
+    24: dict(
+        # num_iter_per_epoch = ceil(num_images/batch_size)
+        max_iteration=267630,  # 22 epochs on full dataset
+        lr=0.00001,            # lowered learning rate                
         lr_decay_epoch=None,   # disable automatic lr decay
         momentum=0.9,  
         weight_decay=0.0005,
