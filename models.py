@@ -10,12 +10,22 @@ import torch.nn.functional as F
 
 class NormFeat(nn.Module):
     ''' L2 normalization of features '''
-    def __init__(self):
+    def __init__(self, scale_factor=1.0):
         super(NormFeat, self).__init__()
+        self.scale_factor = scale_factor
 
     def forward(self, input):
-        return F.normalize(input, p=2, dim=1)
+        return self.scale_factor * F.normalize(input, p=2, dim=1)
 
+
+class ScaleFeat(nn.Module):
+# https://discuss.pytorch.org/t/is-scale-layer-available-in-pytorch/7954/6?u=arunirc
+    def __init__(self, scale_factor=50.0):
+        super().__init__()
+        self.scale = scale_factor
+
+    def forward(self, input):
+        return input * self.scale
 
 
 # https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/surgery.py
