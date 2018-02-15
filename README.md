@@ -10,8 +10,8 @@ This repository shows how to train ResNet models in PyTorch on publicly availabl
 * *Notes*:
     * Multiple GPUs (we used 5 GeForce GTX 1080Ti in parallel) recommended for the training to finish in reasonable time.
     * Tested on server running CentOS
-    * Requires a basic knowledge of [PyTorch](http://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) 
-    * Optional - an explanatory [blogpost](https://blog.waya.ai/deep-residual-learning-9610bb62c355) on Deep Residual Networks (ResNets).
+    * Using [PyTorch](http://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html) 
+    * Optional - an explanatory [blogpost](https://blog.waya.ai/deep-residual-learning-9610bb62c355) on Deep Residual Networks (ResNets) structure.
 
 ### Contents
 - [ResNet-50 on UMD-Faces](https://github.com/AruniRC/resnet-face-pytorch#pytorch-resnet-on-umd-face)
@@ -61,6 +61,7 @@ Most of the usual settings (data augmentations, learning rates, number of epochs
 * *Plotting CSV logs:* The log-file plotting utility function can be called from the command line as shown in the snippet below. The figure is saved under the log folder in the output location of that experiment.
     * `LOG_FILE=umd-face/logs/MODEL-resnet_umdfaces_CFG-004_TIMESTAMP/log.csv`
     * `python -c "from utils import plot_log_csv; plot_log_csv('$LOG_FILE')"`
+    * If that gives parsing errors: `python -c "from utils import plot_log; plot_log('$LOG_FILE')"`
 
 stage 1 |   stage 2  | stage 3  
 :------:|:----------:|:--------:
