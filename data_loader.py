@@ -115,20 +115,15 @@ class LFWDataset(data.Dataset):
         self.pair_label = issame_list
         self.transforms = transforms
 
-
     def __len__(self):
         return len(self.files[self.split])
-
 
     def __getitem__(self, index):
         img_file = self.files[self.split][index]
         img = PIL.Image.open(img_file)
-
         if DEBUG:
             print img_file
-
         im_out = self.transforms(img)
-
         return im_out
 
 
@@ -139,7 +134,6 @@ class IJBADataset(data.Dataset):
         This returns multiple images in a batch.
         Path_list -- full paths to cropped images saved as <sighting_id>.jpg 
     '''
-
     def __init__(self, path_list, transforms, split=1):
         '''
             Parameters
@@ -157,7 +151,8 @@ class IJBADataset(data.Dataset):
     def __getitem__(self, index):
         img_file = self.files[self.split][index]
         img = PIL.Image.open(img_file)
-        img = img.convert('RGB')
+        if not img.mode == 'RGB':
+            img = img.convert('RGB')
         if DEBUG:
             print img_file
         im_out = self.transforms(img)
