@@ -174,8 +174,10 @@ class Trainer(object):
                 enumerate(self.train_loader), total=len(self.train_loader),
                 desc='Train epoch=%d' % self.epoch, ncols=80, leave=False):
 
-            iteration = batch_idx + self.epoch * len(self.train_loader)
+            if batch_idx == len(self.train_loader)-1:
+                break # discard last batch in epoch (unequal batch-sizes mess up BatchNorm)
 
+            iteration = batch_idx + self.epoch * len(self.train_loader)
             if self.iteration != 0 and (iteration - 1) != self.iteration:
                 continue  # for resuming
             self.iteration = iteration
